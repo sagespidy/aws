@@ -16,9 +16,16 @@ aws ec2 create-security-group --group-name $g_name --description "security group
 
 echo
 echo
-echo -e "The security group has been created. \n `cat $g_name.secgrp` "
+echo -e "The security group has been created. \n "
 echo
 echo
+##
+## store group id in a var
+g_id=`cat $g_name.secgrp | grep sg | cut -d '"' -f4`
+echo "group id is $g_id"
+
+##
+##
 # Command to add open  ports in Above created security group
 
 #enable ssh
@@ -28,4 +35,34 @@ aws ec2 authorize-security-group-ingress --group-name $g_name --protocol tcp --p
 aws ec2 authorize-security-group-ingress --group-name $g_name --protocol tcp --port 80 --cidr 0.0.0.0/0
 #enable HTTPS
 aws ec2 authorize-security-group-ingress --group-name $g_name --protocol tcp --port 443 --cidr 0.0.0.0/0
+echo -e "By Default, the following ports are enabled: \n 22		SSH\n 80		HTTP\n 443 		HTTPS"
 
+###
+### Create pem file
+####
+
+
+echo " Welcome! This script will create a key pair "
+echo -e "\n\n\n"
+
+echo "Please enter the name of key-pair to be created:"
+read kp
+aws ec2 create-key-pair --key-name $kp --query 'KeyMaterial' --output text > $kp.pem
+echo -e "\n\n\n"
+echo "Key-pair Created SuccessFully.\n You can find the pem file \"$kp.pem\" in /Users/Spidy/pem/ "
+chmod 400 $kp.pem
+mv $kp.pem ~/pem
+#
+#
+# finally Launch instance with ubuntu
+
+#
+
+echo -e " \n\n\n\ "
+echo "Please enter the type of instance (Example format : t2.small)" :
+read i_type
+
+# Launch ec2 with exiting sec grp and key pair
+aws ec2 run-instances --image-id ami-e13739f6 --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId'
+
+echo "instance created."
