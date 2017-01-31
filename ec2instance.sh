@@ -51,7 +51,7 @@ aws ec2 create-key-pair --key-name $kp --query 'KeyMaterial' --output text > $kp
 echo -e "\n\n\n"
 echo "Key-pair Created SuccessFully.\n You can find the pem file \"$kp.pem\" in /Users/Spidy/pem/ "
 chmod 400 $kp.pem
-mv $kp.pem ~/pem
+mv $kp.pem ~/cpem
 #
 #
 # finally Launch instance with ubuntu
