@@ -62,6 +62,7 @@ echo "Please enter the type of instance (Example format : t2.small)" :
 read i_type
 
 # Launch ec2 with exiting sec grp and key pair
-aws ec2 run-instances --image-id ami-e13739f6 --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings file://~/aws/size.json
+aws ec2 run-instances --image-id ami-e13739f6 --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'
+
 
 echo "instance created."
