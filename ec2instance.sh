@@ -74,7 +74,7 @@ echo "Enter the ami of Operating system you want to lauch"
 read ami
 
 # Launch ec2 with exiting sec grp and key pair
-dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' `
+dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' | cut -d '"' -f2`
 
 #--user-data file:///Users/spidy/shell-scripts/non-interactive-apache2.sh
 
@@ -99,3 +99,7 @@ done
 
 # Assign Elatic ip to dev server
 aws ec2 associate-address --instance-id $dev --public-ip $eip_dev
+
+# Print details
+
+echo "Instance id is : $dev   and Elastic-IP is : $eip_dev "
