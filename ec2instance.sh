@@ -3,7 +3,7 @@ clear
 aws configure
 echo
 echo
-echo 				"Welcome! This script will Launch a security group"
+echo 				"Welcome! This script will Launch a Ec2  instance"
 echo
 echo "Please enter the name of security group: "
 # Ask the user for aws security group name to be
