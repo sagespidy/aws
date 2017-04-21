@@ -1,10 +1,11 @@
 #!/bin/bash
-
+clear
+aws configure
 echo
 echo
-echo 				"Welcome! This scripat will create a security group"
+echo 				"Welcome! This script will Launch a security group"
 echo
-echo "Please enter the name of group to created in aws: "
+echo "Please enter the name of security group: "
 # Ask the user for aws security group name to be
 read g_name
 
@@ -69,9 +70,32 @@ fi
 echo -e " \n\n\n\ "
 echo "Please enter the type of instance (Example format : t2.small)" :
 read i_type
+echo "Enter the ami of Operating system you want to lauch"
+read ami
 
 # Launch ec2 with exiting sec grp and key pair
-aws ec2 run-instances --image-id ami-a58d0dc5 --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file:///Users/spidy/shell-scripts/non-interactive-apache2.sh
+dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' `
+
+#--user-data file:///Users/spidy/shell-scripts/non-interactive-apache2.sh
+
+#Create Name tag
+aws ec2 create-tags --resources $dev --tags Key=Name,Value=ec2-dev
 
 
 echo "instance created."
+
+#Assign  new Elastic Ip address
+eip_dev=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
+
+echo "Elastic ip allocated. :)"
+
+echo "Waiting 60 seconds ..."
+
+for ((i=60;i>=1;i--))
+do
+	echo -e "							$i \n"
+	sleep 1
+done
+
+# Assign Elatic ip to dev server
+aws ec2 associate-address --instance-id $dev --public-ip $eip_dev
