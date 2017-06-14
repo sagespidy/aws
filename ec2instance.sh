@@ -85,7 +85,8 @@ else
   echo 'Please type either "yes" or "no"'
   f1
 fi
-
+cd ~
+wget https://raw.githubusercontent.com/sagespidy/shell-scripts/master/non-interactive-apache2.sh
 
 
 
@@ -98,9 +99,9 @@ echo "Enter the ami of Operating system you want to lauch"
 read ami
 
 # Launch ec2 with exiting sec grp and key pair
-dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' | cut -d '"' -f2`
+dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id --count 1 --instance-type $i_type --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
-#--user-data file:///Users/spidy/shell-scripts/non-interactive-apache2.sh
+
 
 #Create Name tag
 aws ec2 create-tags --resources $dev --tags Key=Name,Value=ec2-dev
