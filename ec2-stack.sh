@@ -24,6 +24,7 @@ s=staging-elb
 # create-security-groups
 #dev
 g_id_dev=`aws ec2 create-security-group --group-name $g1 --description "security group for $g1 development environment in EC2" | grep sg | cut -d '"' -f4`
+
 #Qa
 g_id_qa=`aws ec2 create-security-group --group-name $g2 --description "security group for $g2 development environment in EC2" | grep sg | cut -d '"' -f4`
 #staging
@@ -35,6 +36,7 @@ g_id_qa_rds=`aws ec2 create-security-group --group-name $r2 --description "secur
 #staging_rds
 g_id_staging_rds=`aws ec2 create-security-group --group-name $r3 --description "security group for $r3 development environment in EC2" | grep sg | cut -d '"' -f4`
 g_id_staging_elb=`aws ec2 create-security-group --group-name $s --description "security group for $s development environment in EC2" | grep sg | cut -d '"' -f4`
+echo "security groups created \n Authorisation in progress ..."
 # Authorise DEV security group
 aws ec2 authorize-security-group-ingress --group-name $g1 --protocol tcp --port 22 --cidr 111.93.125.26/32
 aws ec2 authorize-security-group-ingress --group-name $g1 --protocol tcp --port 22 --cidr 182.74.105.34/32
@@ -52,6 +54,8 @@ aws ec2 authorize-security-group-ingress --group-name $g3 --protocol tcp --port 
 aws ec2 authorize-security-group-ingress --group-name $g3 --protocol tcp --port 22 --cidr 182.74.105.34/32
 aws ec2 authorize-security-group-ingress --group-name $g3 --protocol tcp --port 80 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-name $g3 --protocol tcp --port 443 --cidr 0.0.0.0/0
+
+echo "Ec2 Authorisation completed"
 
 # Authorise DEV_RDS security group
 aws ec2 authorize-security-group-ingress --group-name $r1 --protocol tcp --port 3306 --cidr 111.93.125.26/32
@@ -72,9 +76,9 @@ aws ec2 authorize-security-group-ingress --group-name $r3 --protocol tcp --port 
 aws ec2 authorize-security-group-ingress --group-name $s --protocol tcp --port 80 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-name $s --protocol tcp --port 443 --cidr 0.0.0.0/0
 
+echo "RDS Authorisation done ...."
 
 # create-key-pair
-clear
 
 echo "Do You want create new pem file Yes/no ?"
 read x
@@ -128,26 +132,26 @@ clear
 echo "Enter the ami of Operating system you want to Launch"
 read ami
 # Create instance
-dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_dev --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/jdk-tomcat-nginx.sh | cut -d '"' -f2`
+dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_dev --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
 #Create Name tag
 aws ec2 create-tags --resources $dev --tags Key=Name,Value=ec2-dev
 echo "dev stance created   $dev"
 
 
-qa=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_qa --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/jdk-tomcat-nginx.sh | cut -d '"' -f2`
+qa=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_qa --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
  #Create Name tag
  aws ec2 create-tags --resources $qa --tags Key=Name,Value=ec2-qa
  echo "QA stance created   $qa"
 
-staging1=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/jdk-tomcat-nginx.sh | cut -d '"' -f2`
+staging1=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
 #Create Name tag
 aws ec2 create-tags --resources $staging1 --tags Key=Name,Value=ec2-Staging1
 echo "staging1 instance created   $staging1"
 
-staging2=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/jdk-tomcat-nginx.sh | cut -d '"' -f2`
+staging2=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
 #Create Name tag
 aws ec2 create-tags --resources $staging2 --tags Key=Name,Value=ec2-staging2
@@ -218,24 +222,31 @@ aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAcce
 aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess --user-name $pname
 aws iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess --user-name $pname
 
-echo "IAM User Password : $pname-456$%^  \n\n" >> ~/$pname-creds.json
+echo '{' >> ~/$pname-creds.json
 
-echo "##############################################################################" >> ~/$pname-creds.json
-echo "ssh UserName : $pname" >> ~/$pname-creds.json
-echo "ssh Password : $pname-123#@" >> ~/$pname-creds.json
-echo "*********************************************************************************\n\n" >> ~/$pname-creds.json
-echo "dev server ip : $eip_dev \n" >> ~/$pname-creds.json
-echo "qa server ip : $eip_qa\n" >> ~/$pname-creds.json
-echo "staging1 server ip : $eip_staging1\n" >> ~/$pname-creds.json
-echo "staging2 server ip : $eip_staging2 \n" >> ~/$pname-creds.json
+echo ' "IAM UserName" ' ':' '"'"$pname" '"'
+echo '"IAM User Password"' ':' '"' "$pname-456$%^" '"' "\n\n" >> ~/$pname-creds.json
+echo '}' >> ~/$pname-creds.json
 
-echos
+echo '{' >> ~/$pname-creds.json
+
+echo '"ssh UserName" ' ':' '"' "$pname" '"' >> ~/$pname-creds.json
+echo '"ssh Password"' ':' '"' "$pname-123#@" '"' >> ~/$pname-creds.json
+
+
+echo '"Dev server ip"' ':' '"' "$eip_dev" '"' "\n" >> ~/$pname-creds.json
+echo '"QA server ip"' ':' '"' "$eip_qa" '"' "\n" >> ~/$pname-creds.json
+echo '"staging1 server ip"' ':' '"' "$eip_staging1" '"' "\n" >> ~/$pname-creds.json
+echo '"staging2 server ip"' ':' '"' "$eip_staging2" '"' "\n" >> ~/$pname-creds.json
+
+echo '}' >> ~/$pname-creds.json
+
+echo
 echo
 
-echo "##############################################################################" >> ~/$pname-creds.json
-echo "RDS UserName : $pname" >> ~/$pname-creds.json
-echo "RDS Password : $pname-456$%^"
-echo "*********************************************************************************\n\n" >> ~/$pname-creds.json
+echo '{' >> ~/$pname-creds.json
+echo '"RDS UserName' ':' '"' "$pname" '"' >> ~/$pname-creds.json
+echo '"RDS Password" :' '"' "$pname-456$%^" '"' >> ~/$pname-creds.json
 
 echo "Waiting 333 seconds ..."
 
@@ -251,6 +262,7 @@ rds_staging_endp=`aws rds describe-db-instances |grep -i address | grep staging|
 
 
 
-echo "rds-dev Endpoint : $rds_dev_endp" >> ~/$pname-creds.json
-echo "rds-qa Endpoint : $rds_staging_endp" >> ~/$pname-creds.json
-echo "rds-staging Endpoint : $rds_staging_endp" >> ~/$pname-creds.json
+echo '"rds-dev Endpoint"' ':''"' "$rds_dev_endp"'"' >> ~/$pname-creds.json
+echo '"rds-qa Endpoint"' ':''"' "$rds_dev_endp"'"' >> ~/$pname-creds.json
+echo '"rds-staging Endpoint"' ':''"' "$rds_dev_endp"'"' >> ~/$pname-creds.json
+echo '}' >> ~/$pname-creds.json
