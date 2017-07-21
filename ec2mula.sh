@@ -14,13 +14,13 @@ sed -i "s/usr_name=lvme/usr_name=$pname/" ~/non-interactive-apache2.sh
 #sed -i "s/usr_name=lvme/usr_name=$pname/" ~/jdk-tomcat-nginx.sh
 
 # define groups
-g1=$pname-dev
-g2=$pname-qa
-g3=$pname-staging
-r1=$pname-rds-dev
-r2=$pname-rds-qa
-r3=$pname-rds-staging
-s=$pname-staging-elb
+g1=dev
+g2=qa
+g3=staging
+r1=rds-dev
+r2=rds-qa
+r3=rds-staging
+s=staging-elb
 # create-security-groups
 #dev
 g_id_dev=`aws ec2 create-security-group --group-name $g1 --description "security group for $g1 development environment in EC2" | grep sg | cut -d '"' -f4`
@@ -107,7 +107,25 @@ function f1()
 }
 
 echo    # (optional) move to a new line
-f1
+if [[ $x =~ ^[Yy][eE][sS]$ ]]
+then
+  echo "Please enter the name of pem file to be created:"
+  read kp
+  aws ec2 create-key-pair --key-name $kp --query 'KeyMaterial' --output text > $kp.pem
+  echo  "\n\n\n"
+  echo "Pem file Created SuccessFully.\n It can be found in $HOME  "
+  chmod 400 $kp.pem
+  mv $kp.pem ~/
+elif [[ $x =~ ^[nN][oO] ]]
+then
+  echo "enter name of pem file | Just name - don't include .pem extension"
+  read kp
+  echo $kp.pem
+
+else
+  echo 'Please type either "yes" or "no"'
+  f1
+fi
 clear
 #echo "Please enter the type of instance (Example format : t2.small)" :
 #read i_type
@@ -117,33 +135,33 @@ read ami
 dev=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_dev --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
 #Create Name tag
-aws ec2 create-tags --resources $dev --tags Key=Name,Value=$pname-dev
-echo "dev instance created   $dev"
+aws ec2 create-tags --resources $dev --tags Key=Name,Value=ec2-dev
+echo "dev stance created   $dev"
 
 
-qa=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_qa --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
+staging=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
  #Create Name tag
- aws ec2 create-tags --resources $qa --tags Key=Name,Value=$pname-qa
- echo "QA instance created   $qa"
+ aws ec2 create-tags --resources $staging --tags Key=Name,Value=ec2-Staging1
+ echo "staging stance created   $staging"
 
-staging1=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
-
-#Create Name tag
-aws ec2 create-tags --resources $staging1 --tags Key=Name,Value=$pname-Staging1
-echo "staging1 instance created   $staging1"
-
-staging2=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_staging --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
+qa1=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_qa --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}' --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
 
 #Create Name tag
-aws ec2 create-tags --resources $staging2 --tags Key=Name,Value=$pname-staging2
-echo "staging2 stance created   $staging2"
+aws ec2 create-tags --resources $qa1 --tags Key=Name,Value=ec2-qa1
+echo "qa1 instance created   $qa1"
+
+qa2=`aws ec2 run-instances --image-id $ami --security-group-ids $g_id_qa --count 1 --instance-type t2.micro --key-name $kp --query 'Instances[0].InstanceId' --block-device-mappings  '{"DeviceName": "/dev/sda1","Ebs": {"VolumeSize": 30}}'  --user-data file://~/non-interactive-apache2.sh | cut -d '"' -f2`
+
+#Create Name tag
+aws ec2 create-tags --resources $qa2 --tags Key=Name,Value=ec2-qa2
+echo "qa2 stance created   $qa2"
 
 #Allocate Elastic-IP address
 eip_dev=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
-eip_qa=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
-eip_staging1=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
-eip_staging2=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
+eip_staging=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
+eip_qa1=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
+eip_qa2=`aws ec2 allocate-address |grep Public | cut -d '"' -f4`
 
 echo "4 Elastic ip allocated. :)"
 
@@ -156,9 +174,9 @@ do
 done
 
 aws ec2 associate-address --instance-id $dev --public-ip $eip_dev
-aws ec2 associate-address --instance-id $qa --public-ip $eip_qa
-aws ec2 associate-address --instance-id $staging1 --public-ip $eip_staging1
-aws ec2 associate-address --instance-id $staging2 --public-ip $eip_staging2
+aws ec2 associate-address --instance-id $staging --public-ip $eip_staging
+aws ec2 associate-address --instance-id $qa1 --public-ip $eip_qa1
+aws ec2 associate-address --instance-id $qa2 --public-ip $eip_qa2
 
 
 Echo "Elastic-IP's Assigned to their Respective servers"
@@ -227,7 +245,7 @@ echo
 echo
 
 echo '{' >> ~/$pname-creds.json
-echo '"RDS UserName"' ':' '"' "$pname" '"' >> ~/$pname-creds.json
+echo '"RDS UserName' ':' '"' "$pname" '"' >> ~/$pname-creds.json
 echo '"RDS Password" :' '"' "$pname-456$%^" '"' >> ~/$pname-creds.json
 
 echo "Waiting 333 seconds ..."
