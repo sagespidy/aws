@@ -6,14 +6,22 @@ aws configure
 # define groups
 r1=$pname-rds-dev
 r2=$pname-rds-qa
-r3=-$pname-rds-staging
-
+r3=$pname-rds-staging
+echo "creating dev-rds"
 #DEV_RDS
 g_id_dev_rds=`aws ec2 create-security-group --group-name $r1 --description "security group for $r1 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_dev_rds --tags Key=Name,Value=$r1
+echo "creating qa-rds"
+
 #qa_RDS
 g_id_qa_rds=`aws ec2 create-security-group --group-name $r2 --description "security group for $r2 development environment in EC2" | grep sg | cut -d '"' -f4`
+echo "creating staging-rds"
+aws ec2 create-tags --resources $g_id_qa_rds --tags Key=Name,Value=$r2
+
+
 #staging_rds
 g_id_staging_rds=`aws ec2 create-security-group --group-name $r3 --description "security group for $r3 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_staging_rds --tags Key=Name,Value=$r3
 
 echo "security groups created \n Authorisation in progress ..."
 

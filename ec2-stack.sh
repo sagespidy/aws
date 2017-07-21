@@ -24,18 +24,28 @@ s=$pname-staging-elb
 # create-security-groups
 #dev
 g_id_dev=`aws ec2 create-security-group --group-name $g1 --description "security group for $g1 development environment in EC2" | grep sg | cut -d '"' -f4`
-
+aws ec2 create-tags --resources $g_id_dev --tags Key=Name,Value=$g1
 #Qa
 g_id_qa=`aws ec2 create-security-group --group-name $g2 --description "security group for $g2 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_qa --tags Key=Name,Value=$g2
 #staging
 g_id_staging=`aws ec2 create-security-group --group-name $g3 --description "security group for $g3 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_staging --tags Key=Name,Value=$g3
 #DEV_RDS
 g_id_dev_rds=`aws ec2 create-security-group --group-name $r1 --description "security group for $r1 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_dev_rds --tags Key=Name,Value=$r1
+
 #qa_RDS
 g_id_qa_rds=`aws ec2 create-security-group --group-name $r2 --description "security group for $r2 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_qa_rds --tags Key=Name,Value=$r2
+
 #staging_rds
 g_id_staging_rds=`aws ec2 create-security-group --group-name $r3 --description "security group for $r3 development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_staging_rds --tags Key=Name,Value=$r3
+
 g_id_staging_elb=`aws ec2 create-security-group --group-name $s --description "security group for $s development environment in EC2" | grep sg | cut -d '"' -f4`
+aws ec2 create-tags --resources $g_id_staging_elb --tags Key=Name,Value=$s
+
 echo "security groups created \n Authorisation in progress ..."
 # Authorise DEV security group
 aws ec2 authorize-security-group-ingress --group-name $g1 --protocol tcp --port 22 --cidr 111.93.125.26/32
